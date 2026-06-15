@@ -1,0 +1,15 @@
+# GUI-first with tighter terminal density.
+macos-titlebar-style = tabs
+macos-window-buttons = visible
+macos-window-shadow = true
+
+background-opacity = 0.98
+background-opacity-cells = true
+window-theme = auto
+
+font-style = SemiLight
+font-style-italic = SemiLight Italic
+
+window-padding-x = 0
+window-padding-y = 0
+window-padding-balance = true

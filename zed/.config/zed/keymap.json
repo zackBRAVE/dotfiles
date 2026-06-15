@@ -1,0 +1,224 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: Open Default Keymap`
+// from the command palette.
+[
+  {
+    "context": "Editor && VimControl",
+    "bindings": {
+      "j": "vim::Left",
+      "k": "vim::Down",
+      "l": "vim::Up",
+      ";": "vim::Right",
+      "L": [
+        "editor::MoveUpByLines",
+        {
+          "lines": 5
+        }
+      ],
+      "K": [
+        "editor::MoveDownByLines",
+        {
+          "lines": 5
+        }
+      ],
+      "h": "command_palette::Toggle",
+      "-": "search::SelectPreviousMatch",
+      "=": "search::SelectNextMatch",
+      "U": "vim::Redo",
+      "N": "vim::StartOfLine",
+      "M": "vim::EndOfLine",
+      "Y": "vim::YankToEndOfLine",
+      "<": "vim::Outdent",
+      ">": "vim::Indent",
+    },
+  },
+  {
+    "context": "Editor && VimControl && vim_mode == normal",
+    "bindings": {
+      "space o": [
+        "workspace::SendKeystrokes",
+        "o escape l"
+      ],
+      "space O": [
+        "workspace::SendKeystrokes",
+        "O escape k"
+      ],
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-t cmd-t": "project_symbols::Toggle",
+      "ctrl-cmd-t": "workspace::NewTerminal",
+    },
+  },
+  {
+    "bindings": {
+      "cmd-t": "terminal_panel::ToggleFocus",
+      "cmd-shift-g": [
+        "task::Spawn",
+        {
+          "task_name": "lg - lazygit"
+        }
+      ],
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "cmd-shift-f": "editor::Format",
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "a": "project_panel::NewFile",
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "d": "project_panel::Delete",
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "r": "project_panel::Rename",
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "j": "project_panel::CollapseSelectedEntry",
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      ";": "project_panel::ExpandSelectedEntry",
+    },
+  },
+  {
+    "context": "(GitPanel && ChangesList)",
+    "bindings": {
+      "l": "menu::SelectPrevious",
+    },
+  },
+  {
+    "context": "FileHistoryView",
+    "bindings": {
+      "l": "menu::SelectPrevious",
+    },
+  },
+  {
+    "context": "(OutlinePanel && not_editing)",
+    "bindings": {
+      "l": "vim::MenuSelectPrevious",
+    },
+  },
+  {
+    "context": "(VimControl && !menu)",
+    "bindings": {
+      "l": "vim::Up",
+    },
+  },
+  {
+    "context": "((VimControl && vim_mode == helix_normal) && !menu)",
+    "bindings": {
+      "l": [
+        "vim::Up",
+        {
+          "display_lines": true,
+        },
+      ],
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "l": "vim::MenuSelectPrevious",
+    },
+  },
+  {
+    "context": "SettingsWindow > (NavigationMenu && !search)",
+    "bindings": {
+      "l": "settings_editor::FocusPreviousNavEntry",
+    },
+  },
+  {
+    "context": "Prompt",
+    "bindings": {
+      "l": "menu::SelectPrevious",
+    },
+  },
+  {
+    "context": "(GitPanel && ChangesList)",
+    "bindings": {
+      "k": "menu::SelectNext",
+    },
+  },
+  {
+    "context": "FileHistoryView",
+    "bindings": {
+      "k": "menu::SelectNext",
+    },
+  },
+  {
+    "context": "(OutlinePanel && not_editing)",
+    "bindings": {
+      "k": "vim::MenuSelectNext",
+    },
+  },
+  {
+    "context": "(VimControl && !menu)",
+    "bindings": {
+      "k": "vim::Down",
+    },
+  },
+  {
+    "context": "((VimControl && vim_mode == helix_normal) && !menu)",
+    "bindings": {
+      "k": [
+        "vim::Down",
+        {
+          "display_lines": true,
+        },
+      ],
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "k": "vim::MenuSelectNext",
+    },
+  },
+  {
+    "context": "SettingsWindow > (NavigationMenu && !search)",
+    "bindings": {
+      "k": "settings_editor::FocusNextNavEntry",
+    },
+  },
+  {
+    "context": "Prompt",
+    "bindings": {
+      "k": "menu::SelectNext",
+    },
+  },
+  {
+    "context": "Pane",
+    "bindings": {
+      "enter": "search::SelectNextMatch"
+    }
+  },
+  {
+    "context": "ContextEditor > Editor",
+    "bindings": {
+      "enter": "search::SelectNextMatch"
+    }
+  }
+]

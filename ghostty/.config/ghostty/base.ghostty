@@ -1,0 +1,25 @@
+# Shared defaults for both workflows.
+font-family = CaskaydiaCove Nerd Font
+font-size = 14
+
+theme = dark:vitesse-dark-soft,light:vitesse-light-soft
+
+window-save-state = always
+window-step-resize = true
+window-inherit-font-size = true
+window-inherit-working-directory = true
+window-new-tab-position = current
+copy-on-select = clipboard
+selection-clear-on-copy = true
+mouse-hide-while-typing = true
+
+shell-integration-features = ssh-env,ssh-terminfo
+macos-option-as-alt = true
+
+keybind = global:cmd+backquote=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-size = 40%
+quick-terminal-screen = main
+quick-terminal-autohide = true
+quick-terminal-space-behavior = move
+quick-terminal-animation-duration = 0.12

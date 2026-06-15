@@ -1,0 +1,42 @@
+# Ghost Complete configuration
+# Uncomment and edit values to customize. All values shown are defaults.
+
+[trigger]
+# auto_chars = [' ', '/', '-', '.']
+delay_ms = 100
+# auto_trigger = true  # Set to false to disable all automatic triggers (manual keybinding only)
+
+[popup]
+# max_visible = 10
+borders = true  # Set to true to enable rounded borders around the popup
+
+# [suggest]
+# max_results = 50
+# max_history_results = 5
+# generator_timeout_ms = 5000  # Per-invocation timeout (ms) for async script/git generators
+
+# [suggest.providers]
+# commands = true
+# filesystem = true
+# specs = true
+# git = true
+
+[keybindings]
+accept = "tab"
+accept_and_enter = "ctrl+p"
+# dismiss = "escape"
+# navigate_up = "arrow_up"
+# navigate_down = "arrow_down"
+# trigger = "ctrl+/"
+
+[theme]
+preset = "material-darker"
+# selected = "reverse"
+# description = "dim"
+# match_highlight = "bold"
+# item_text = ""
+# scrollbar = "dim"
+# border = "dim"
+
+[experimental]
+multi_terminal = true  # Allow Ghost Complete to run in terminals like Zed

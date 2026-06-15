@@ -1,0 +1,6 @@
+# Ghostty config entrypoint.
+# Base is always loaded. Enable exactly one overlay below.
+config-file = base.ghostty
+# config-file = vimtmux.ghostty
+# config-file = guifirst.ghostty
+config-file = hybrid.ghostty

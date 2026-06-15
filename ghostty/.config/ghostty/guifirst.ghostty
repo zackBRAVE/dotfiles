@@ -1,0 +1,6 @@
+# macOS-native workflow.
+macos-titlebar-style = tabs
+macos-window-shadow = true
+background-opacity = 1
+window-theme = auto
+macos-window-buttons = visible
