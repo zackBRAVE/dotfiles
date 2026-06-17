@@ -8,14 +8,15 @@
 # OSC 7: current working directory reporting
 
 # Percent-encode a path for use in file:// URIs (RFC 8089).
-# Encodes everything except unreserved chars and '/'.
+# Strict alphabet: only [a-zA-Z0-9._~/-] passes through. ';' MUST be
+# encoded because vte splits OSC params on it (see ADR 0003).
 _gc_urlencode_path() {
     local input="$1" encoded="" i ch hex
     local LC_ALL=C  # force byte-level iteration for correct UTF-8 encoding
     for (( i = 1; i <= ${#input}; i++ )); do
         ch="${input[$i]}"
         case "$ch" in
-            [a-zA-Z0-9._~:@!\$\&\'\(\)\*+,\;=/-])
+            [a-zA-Z0-9._~/-])
                 encoded+="$ch"
                 ;;
             *)
@@ -27,18 +28,145 @@ _gc_urlencode_path() {
     printf '%s' "$encoded"
 }
 
+# Percent-encode a command-line buffer for OSC 7772 transport.
+#
+# Strict alphabet for OSC 7772 transport: [a-zA-Z0-9._~/-] plus literal
+# space. Differs from _gc_urlencode_path only by allowing space (path
+# components rarely need a literal space and percent-encoding is harmless
+# if they do). Everything else — including ';', '%', '\', all control
+# bytes (0x00-0x1F, 0x7F) and high bytes (0x80-0xFF) — gets `%XX`-encoded.
+# This is non-negotiable: any unencoded ';' would split the OSC parameter
+# list and silently truncate the buffer at the parser; any unencoded BEL
+# (0x07) or ESC+ST (0x1B 0x5C) would terminate the OSC envelope mid-
+# payload; an unencoded ESC could smuggle a nested escape sequence into
+# the parser's state machine. See ADR 0003.
+#
+# Do NOT widen the allow-list. If a future use case wants more characters
+# unencoded, weigh it against the cost of re-introducing the original
+# truncation/smuggling bug class and reject it anyway.
+_gc_urlencode_buffer() {
+    local input="$1" encoded="" i ch hex
+    local LC_ALL=C  # byte-level iteration so multi-byte UTF-8 round-trips
+    for (( i = 1; i <= ${#input}; i++ )); do
+        ch="${input[$i]}"
+        case "$ch" in
+            ' '|[a-zA-Z0-9._~/-])
+                encoded+="$ch"
+                ;;
+            *)
+                printf -v hex '%%%02X' "'$ch"
+                encoded+="$hex"
+                ;;
+        esac
+    done
+    printf '%s' "$encoded"
+}
+
+# Shell-side budgets. Below the Rust hard cap (1 MiB) so we never produce
+# a frame the parser will reject silently. Per-entry cap drops individual
+# pathological values (e.g. a multi-MB LS_COLORS) without losing the rest.
+typeset -gi _GC_ENV_TOTAL_BUDGET=524288
+typeset -gi _GC_ENV_PER_VALUE_CAP=16384
+
+_gc_report_env() {
+    [[ -n "$GHOST_COMPLETE_ACTIVE" ]] || return
+
+    local key meta value encoded entry payload="" truncated=0
+    local -i used=0
+
+    # High-priority groups first so credentials/PATH survive a tight budget.
+    local -a essentials=(PATH HOME USER SHELL PWD OLDPWD LANG TERM \
+        GHOSTTY_RESOURCES_DIR KITTY_WINDOW_ID WEZTERM_UNIX_SOCKET \
+        ALACRITTY_SOCKET ZED_TERM VSCODE_INJECTION ITERM_SESSION_ID)
+    local -a auth_prefixes=(AWS_ GITHUB_ GH_ GOOGLE_ DOCKER_ KUBECONFIG \
+        SSH_AUTH_SOCK XDG_)
+
+    _gc_env_emit() {
+        local k="$1"
+        # Skip GC-internal vars so we never leak our own state.
+        case "$k" in
+            GHOST_COMPLETE_*|_GC_*) return ;;
+        esac
+        [[ -n "$k" && "$k" != [0-9]* && "$k" != *[^a-zA-Z0-9_]* ]] || return
+        meta="${parameters[$k]}"
+        [[ "$meta" == *scalar* && "$meta" == *export* ]] || return
+        value="${(P)k}"
+        entry="$(_gc_urlencode_buffer "${k}=${value}")"
+        if (( ${#entry} > _GC_ENV_PER_VALUE_CAP )); then
+            truncated=1
+            return
+        fi
+        if (( used + ${#entry} + 3 > _GC_ENV_TOTAL_BUDGET )); then
+            truncated=1
+            return
+        fi
+        payload+="${entry}%00"
+        (( used += ${#entry} + 3 ))
+    }
+
+    local k_seen=""
+    for key in "${essentials[@]}"; do
+        _gc_env_emit "$key"
+        k_seen+="|$key|"
+    done
+    local prefix
+    for key in ${(ok)parameters[(R)*export*]}; do
+        for prefix in "${auth_prefixes[@]}"; do
+            [[ "$key" == ${prefix}* ]] || continue
+            [[ "$k_seen" == *"|$key|"* ]] && continue
+            _gc_env_emit "$key"
+            k_seen+="|$key|"
+        done
+    done
+    for key in ${(ok)parameters[(R)*export*]}; do
+        [[ "$k_seen" == *"|$key|"* ]] && continue
+        _gc_env_emit "$key"
+    done
+
+    unset -f _gc_env_emit
+
+    if [[ "$payload" == "${_GC_LAST_ENV_PAYLOAD-}" ]]; then
+        return
+    fi
+    typeset -g _GC_LAST_ENV_PAYLOAD="$payload"
+    printf '\e]7773;%s\a' "$payload"
+
+    # Truncation diagnostic on OSC 7774. One-shot via _GC_ENV_TRUNCATED_REPORTED.
+    if (( truncated )) && [[ -z "${_GC_ENV_TRUNCATED_REPORTED-}" ]]; then
+        typeset -g _GC_ENV_TRUNCATED_REPORTED=1
+        printf '\e]7774;env_truncated;%d\a' "$used"
+    fi
+}
+
+# True when the host terminal natively parses OSC 133 for its own prompt
+# tracking (or emits its own proprietary markers on top, like VSCode's
+# OSC 633). In those terminals our OSC 7771 fallback is redundant — the
+# terminal already understands the OSC 133 we emit below, and OSC 7771
+# only exists for terminals that mangle OSC 133. Currently covers
+# Ghostty, Kitty, WezTerm, Rio, Zed, and VSCode (the latter only once
+# its shell integration is active, signalled by VSCODE_INJECTION being
+# set).
+_gc_native_osc133() {
+    [[ "$TERM_PROGRAM" == "ghostty" || -n "$GHOSTTY_RESOURCES_DIR" ]] && return 0
+    [[ -n "$KITTY_WINDOW_ID" ]] && return 0
+    [[ -n "$WEZTERM_UNIX_SOCKET" || "$TERM_PROGRAM" == "WezTerm" ]] && return 0
+    [[ "$TERM_PROGRAM" == "rio" ]] && return 0
+    [[ -n "$ZED_TERM" ]] && return 0
+    [[ -n "$VSCODE_INJECTION" ]] && return 0
+    return 1
+}
+
 _gc_precmd() {
     # Mark: prompt is about to be displayed
     printf '\e]133;A\a'
-    # OSC 7771: redundant on Ghostty (OSC 133 already handled), needed elsewhere.
-    # Check GHOSTTY_RESOURCES_DIR too — TERM_PROGRAM is overwritten inside tmux.
-    [[ "$TERM_PROGRAM" != "ghostty" && -z "$GHOSTTY_RESOURCES_DIR" ]] && printf '\e]7771;A\a'
+    _gc_native_osc133 || printf '\e]7771;A\a'
+    _gc_report_env
 }
 
 _gc_preexec() {
     # Mark: command is about to execute
     printf '\e]133;C\a'
-    [[ "$TERM_PROGRAM" != "ghostty" && -z "$GHOSTTY_RESOURCES_DIR" ]] && printf '\e]7771;C\a'
+    _gc_native_osc133 || printf '\e]7771;C\a'
 }
 
 # Use add-zsh-hook (which dedups) rather than `precmd_functions+=(…)` /
@@ -63,10 +191,22 @@ _gc_osc7_precmd() {
     add-zsh-hook -d precmd _gc_osc7_precmd
 }
 
-# Report current command buffer to the proxy via custom OSC 7770.
+# Report current command buffer to the proxy via OSC 7772 (secure framing).
 # Fires after every buffer modification (typing, deletion, cursor movement, paste).
+#
+# Do NOT inline `$BUFFER` raw into the OSC payload. See ADR 0003.
+# Raw bytes corrupt the OSC envelope when `$BUFFER` contains `;`, `\a`,
+# or `\e`: vte splits OSC params on `;`, BEL terminates the envelope, and
+# embedded `\e]…\a` smuggles a nested OSC into the parser's state machine.
+#
+# The legacy OSC 7770 emission is gone. The parser still accepts 7770
+# during the deprecation window but logs a one-shot warn! to nudge the
+# user (or distro packager) towards a fresh shell integration.
 _gc_report_buffer() {
-    printf '\e]7770;%d;%s\a' "$CURSOR" "$BUFFER"
+    [[ -n "$GHOST_COMPLETE_ACTIVE" ]] || return
+    local encoded
+    encoded="$(_gc_urlencode_buffer "$BUFFER")"
+    printf '\e]7772;%d;%s\a' "$CURSOR" "$encoded"
 }
 
 # Chain into the existing zle-line-pre-redraw widget without using
@@ -86,9 +226,12 @@ _gc_install_zle_hook() {
     #   1. No widget registered         → direct-install _gc_report_buffer.
     #   2. Existing plain user widget   → chain over it so $WIDGET is preserved.
     #   3. Existing non-user widget
-    #      (completion:/builtin:/…)     → leave it alone. We can't chain a
-    #      non-user widget safely, and silently clobbering someone else's
-    #      registration is worse than losing our buffer hook.
+    #      (completion:/builtin:/…)     → don't clobber it; emit OSC 7774
+    #      zle_hook_disabled (only when $GHOST_COMPLETE_ACTIVE is set, so
+    #      we don't leak the frame to a bare terminal) so the proxy can
+    #      warn. We can't chain a non-user widget safely, and silently
+    #      clobbering someone else's registration is worse than losing
+    #      our buffer hook.
     if (( ! ${+widgets[zle-line-pre-redraw]} )); then
         zle -N zle-line-pre-redraw _gc_report_buffer
     elif [[ "${widgets[zle-line-pre-redraw]}" == user:* ]]; then
@@ -99,9 +242,18 @@ _gc_install_zle_hook() {
             zle _gc_orig_zle_line_pre_redraw -- "$@"
         }
         zle -N zle-line-pre-redraw _gc_zle_line_pre_redraw
+    else
+        # Non-user widget: chaining is unsafe. Don't clobber, but record a
+        # diagnostic so the proxy can surface a clear warning. The 7774
+        # emission is gated on $GHOST_COMPLETE_ACTIVE so we don't leak the
+        # frame to a bare terminal when the proxy isn't watching.
+        local descriptor="${widgets[zle-line-pre-redraw]}"
+        local encoded_desc
+        encoded_desc="$(_gc_urlencode_buffer "$descriptor")"
+        if [[ -n "$GHOST_COMPLETE_ACTIVE" ]]; then
+            printf '\e]7774;zle_hook_disabled;%s\a' "$encoded_desc"
+        fi
     fi
-    # Non-user widget: intentionally no-op. Ghost Complete loses its buffer
-    # hook in this case; that's acceptable degradation.
 }
 
 _gc_install_zle_hook
