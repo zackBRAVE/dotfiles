@@ -8,6 +8,7 @@ delay_ms = 100
 
 [popup]
 # max_visible = 10
+tab_accepts_top = true  # Tab accepts top suggestion even when nothing navigated
 borders = true  # Set to true to enable rounded borders around the popup
 
 # [suggest]
