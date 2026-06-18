@@ -4,3 +4,4 @@ backup/
 logs/
 ghost-complete/.config/ghost-complete/specs/
 ghost-complete/.config/ghost-complete/frecency.json
+zed/.config/zed/prompts
