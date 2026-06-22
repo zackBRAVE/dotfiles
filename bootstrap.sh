@@ -33,7 +33,22 @@ for pkg in */; do
   stow -v "$pkg" 2>/dev/null || echo "  (skipped $pkg)"
 done
 
-# 4. Link agent skills to agent skill directories
+# 4. Rebuild kbd-brightness if source changed (macOS only)
+KBD_SRC="$HOME/.local/bin/kbd-brightness.m"
+KBD_BIN="$HOME/.local/bin/kbd-brightness"
+if [ -f "$KBD_SRC" ] && { [ ! -f "$KBD_BIN" ] || [ "$KBD_SRC" -nt "$KBD_BIN" ]; }; then
+    echo "==> Rebuilding kbd-brightness..."
+    clang -framework Foundation -F/System/Library/PrivateFrameworks \
+          -framework CoreBrightness -O2 -o "$KBD_BIN" "$KBD_SRC"
+fi
+
+# Remind user to configure toggle app on this machine
+if [ ! -f "$HOME/.config/toggle-frontmost-app/env" ]; then
+    echo "==> ⚠  Create ~/.config/toggle-frontmost-app/env with:"
+    echo "    TOGGLE_APP_NAME=<your-app>"
+fi
+
+# 5. Link agent skills to agent skill directories
 echo "==> Linking agent skills..."
 CLAUDE_SKILLS="$HOME/.claude/skills"
 CODEX_SKILLS="$HOME/.codex/skills"
@@ -45,7 +60,7 @@ for skill in "$DOTFILES_DIR"/.agent/skills/*/; do
   ln -sfn "$skill" "$CODEX_SKILLS/$name"
 done
 
-# 5. Set up includeIf so future commits use the personal email
+# 6. Set up includeIf so future commits use the personal email
 GITCONFIG="$HOME/.gitconfig"
 if ! grep -q "dotfiles" "$GITCONFIG" 2>/dev/null; then
   echo "==> Adding includeIf for personal email..."
@@ -61,7 +76,7 @@ EOF
 EOF
 fi
 
-# 6. Set up launchd auto-sync (macOS)
+# 7. Set up launchd auto-sync (macOS)
 PLIST="$HOME/Library/LaunchAgents/com.zackbrave.dotfiles-sync.plist"
 if [[ ! -f "$PLIST" ]]; then
   echo "==> Installing launchd auto-sync..."

@@ -1,0 +1,21 @@
+{
+  "title": "BetterDisplay brightness toggle",
+  "rules": [
+    {
+      "description": "Use F4 to dim all displays to minimum, then restore remembered brightness",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "f4"
+          },
+          "to": [
+            {
+              "shell_command": "$HOME/.local/bin/toggle-betterdisplay-brightness.sh"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
