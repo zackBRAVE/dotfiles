@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "organization": "Local",
+  "date": "January 2026",
+  "abstract": "Framework-neutral React client performance guide for AI agents and LLMs. Contains rules for eliminating waterfalls, reducing bundle size, minimizing rerenders, optimizing rendering work, and improving hot-path JavaScript.",
+  "references": [
+    "https://react.dev",
+    "https://github.com/shuding/better-all"
+  ]
+}
