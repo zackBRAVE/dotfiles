@@ -6,7 +6,6 @@ KBD="${HOME}/.local/bin/kbd-brightness"
 STATE_DIR="${HOME}/.local/state"
 STATE_FILE="${STATE_DIR}/betterdisplay-brightness-toggle.state"
 DEFAULT_RESTORE="${DEFAULT_RESTORE:-0.7}"
-CACHE_TTL=60
 
 mkdir -p "$STATE_DIR"
 
@@ -99,33 +98,30 @@ fi
 
 # --- DIM path ---
 
-# Save keyboard brightness before dimming (read real hardware)
+# Save keyboard brightness before dimming
 KBD_SAVED=$("$KBD" 2>/dev/null || echo "0.5")
 
-# Refresh display IDs + min values cache if expired or empty
-if [ ${#DISPLAY_IDS[@]} -eq 0 ] || [ $(( $(date +%s) - CACHE_TIME )) -gt $CACHE_TTL ]; then
-    ids=$(curl -sf "$HTTP/get?type=Display&identifier=tagID" 2>/dev/null | tr ',' '\n') || exit 0
+# Get current display list from BetterDisplay (handles hotplug)
+current_ids=$(curl -sf "$HTTP/get?type=Display&identifier=tagID" 2>/dev/null | tr ',' '\n') || exit 0
 
-    DISPLAY_IDS=()
-    MIN_VALS=()
-    for id in $ids; do
-        [ -n "$id" ] || continue
-        triplet=$(curl -sf "$HTTP/get?tagID=$id&brightness&min&max&value" 2>/dev/null) || continue
-        IFS=, read -r current min _max <<< "$triplet"
-        DISPLAY_IDS+=("$id")
-        MIN_VALS+=("$min")
-    done
-    CACHE_TIME=$(date +%s)
-fi
+# Build fresh arrays: query each display ONCE for min + current brightness
+NEW_IDS=()
+NEW_MINS=()
+NEW_SAVED=()
 
-# Always re-query current brightness before dimming (never cached — changes frequently)
-SAVED=()
-for i in "${!DISPLAY_IDS[@]}"; do
-    id=${DISPLAY_IDS[$i]}
+for id in $current_ids; do
+    [ -n "$id" ] || continue
     triplet=$(curl -sf "$HTTP/get?tagID=$id&brightness&min&max&value" 2>/dev/null) || continue
-    IFS=, read -r current _ _ <<< "$triplet"
-    SAVED+=("$current")
+    IFS=, read -r current min _ <<< "$triplet"
+    NEW_IDS+=("$id")
+    NEW_MINS+=("$min")
+    NEW_SAVED+=("$current")
 done
+
+DISPLAY_IDS=("${NEW_IDS[@]}")
+MIN_VALS=("${NEW_MINS[@]}")
+SAVED=("${NEW_SAVED[@]}")
+CACHE_TIME=$(date +%s)
 
 # Dim all displays + keyboard in parallel
 for i in "${!DISPLAY_IDS[@]}"; do

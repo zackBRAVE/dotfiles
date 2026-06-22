@@ -48,6 +48,6 @@ case "$check_running" in
                 printf "%s\n" "$current" > "$PREV_FILE"
             fi
         fi
-        open -a "$APP_NAME"
+        open -a "$APP_NAME" &
         ;;
 esac
