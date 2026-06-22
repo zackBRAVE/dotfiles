@@ -33,7 +33,19 @@ for pkg in */; do
   stow -v "$pkg" 2>/dev/null || echo "  (skipped $pkg)"
 done
 
-# 4. Set up includeIf so future commits use the personal email
+# 4. Link agent skills to agent skill directories
+echo "==> Linking agent skills..."
+CLAUDE_SKILLS="$HOME/.claude/skills"
+CODEX_SKILLS="$HOME/.codex/skills"
+mkdir -p "$CLAUDE_SKILLS" "$CODEX_SKILLS"
+
+for skill in "$DOTFILES_DIR"/.agent/skills/*/; do
+  name=$(basename "$skill")
+  ln -sfn "$skill" "$CLAUDE_SKILLS/$name"
+  ln -sfn "$skill" "$CODEX_SKILLS/$name"
+done
+
+# 5. Set up includeIf so future commits use the personal email
 GITCONFIG="$HOME/.gitconfig"
 if ! grep -q "dotfiles" "$GITCONFIG" 2>/dev/null; then
   echo "==> Adding includeIf for personal email..."
@@ -49,7 +61,7 @@ EOF
 EOF
 fi
 
-# 5. Set up launchd auto-sync (macOS)
+# 6. Set up launchd auto-sync (macOS)
 PLIST="$HOME/Library/LaunchAgents/com.zackbrave.dotfiles-sync.plist"
 if [[ ! -f "$PLIST" ]]; then
   echo "==> Installing launchd auto-sync..."
