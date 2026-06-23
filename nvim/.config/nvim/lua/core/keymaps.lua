@@ -34,6 +34,7 @@ if not vim.g.vscode then
 	end, { nargs = "*" })
 
 	keymap.set("n", "<leader>p", "<cmd>Telescope find_files<CR>", { noremap = true, desc = "Telescope find files" })
+	keymap.set("n", "<leader>R", "<Plug>RenamerStart", { desc = "Bulk rename files" })
 	keymap.set("n", "<M-p>", "<cmd>Telescope<CR>", { noremap = true, desc = "Telescope" })
 
 	local nvim_tree_loaded = false
