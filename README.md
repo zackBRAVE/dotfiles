@@ -28,7 +28,7 @@ Applied in: Neovim, Zed, Yazi, Lazygit. Karabiner remaps Right Cmd + h/j/k/l →
 
 ## Bootstrap & sync
 
-- `bootstrap.sh` — clones repo, installs stow, stows all packages, links agent skills, sets up git `includeIf` for personal email, installs launchd auto-sync
+- `bootstrap.sh` — one-shot machine setup script; read its content for detailed steps
 - Auto-sync (`bin/com.zackbrave.dotfiles-sync.plist`) runs `bin/sync-config.sh` every hour: commits any unstaged changes as `sync: auto-config update YYYY-MM-DD-HHMM` and pushes
 
 ## Git conventions
