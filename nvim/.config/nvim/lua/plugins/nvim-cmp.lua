@@ -39,15 +39,11 @@ cmp.setup({
     { name = "path" },
   }),
   formatting = {
-    format = function(entry, vim_item)
+    format = function(_, vim_item)
       if mini_icons_ok then
         local icon = mini_icons.get("lsp", vim_item.kind)
         if icon then
           vim_item.kind = icon .. " " .. vim_item.kind
-        end
-        local entry_icon = mini_icons.get("filetype", entry:get_buffer():option("filetype"))
-        if entry_icon then
-          vim_item.menu = entry_icon
         end
       end
       return vim_item
