@@ -1,6 +1,3 @@
--- set leader key to space
-vim.g.mapleader = " "
-
 local keymap = vim.keymap
 
 -- command and undo
@@ -13,8 +10,6 @@ if not vim.g.vscode then
 
 	-- save and quit
 	keymap.set("", "Q", ":q<CR>", { noremap = true })
-	keymap.set("", "<C-q>", ":qa<CR>", { noremap = true })
-	keymap.set("", "S", ":w<CR>", { noremap = true })
 	keymap.set("", "S", ":w!<CR>", { noremap = true })
 	keymap.set("", "<C-s>", ":w suda://%<CR>", { noremap = true })
 	keymap.set("", "<C-q>", ":q!<CR>", { noremap = true })

@@ -1,3 +1,5 @@
+vim.g.mapleader = " "
+
 if vim.g.vscode then
 	vim.opt.clipboard:append("unnamedplus")
 	require("plugins-setup").setup_vscode()
@@ -19,5 +21,6 @@ else
 	require("plugins.treesitter")
 	require("plugins.gitsigns")
 	require("plugins.auto-dark-mode")
+	require("core.compile")
 	require("core.keymaps")
 end

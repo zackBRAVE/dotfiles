@@ -8,29 +8,6 @@ local function gh(repo, opts)
 	return spec
 end
 
-local legacy_packer_root = vim.fn.stdpath("data") .. "/site/pack/packer"
-local legacy_packer_backup = legacy_packer_root .. ".disabled"
-
-local function disable_legacy_packer_tree()
-	if vim.fn.isdirectory(legacy_packer_root) == 0 then
-		return
-	end
-
-	if vim.fn.isdirectory(legacy_packer_backup) == 1 then
-		return
-	end
-
-	local ok, err = os.rename(legacy_packer_root, legacy_packer_backup)
-	if not ok then
-		vim.schedule(function()
-			vim.notify(
-				"Failed to disable legacy packer plugins: " .. tostring(err),
-				vim.log.levels.WARN
-			)
-		end)
-	end
-end
-
 local function register_pack_hooks()
 	local group = vim.api.nvim_create_augroup("vim_pack_hooks", { clear = true })
 
@@ -59,7 +36,6 @@ local function register_pack_hooks()
 end
 
 local function add_plugins(specs)
-	disable_legacy_packer_tree()
 	register_pack_hooks()
 	vim.pack.add(specs, {
 		confirm = false,
@@ -68,7 +44,6 @@ local function add_plugins(specs)
 end
 
 local function add_optional_plugins(specs)
-	disable_legacy_packer_tree()
 	register_pack_hooks()
 	vim.pack.add(specs, {
 		confirm = false,
@@ -98,12 +73,8 @@ function M.setup()
 	add_plugins({
 		gh("nvim-lua/plenary.nvim"),
 		gh("rlue/vim-barbaric"),
-		gh("bling/vim-bufferline"),
-		gh("bpietravalle/vim-bolt"),
 		gh("qpkorr/vim-renamer"),
-		gh("szw/vim-maximizer"),
 		gh("tpope/vim-surround"),
-		gh("vim-scripts/ReplaceWithRegister"),
 		gh("numToStr/Comment.nvim"),
 		gh("kyazdani42/nvim-web-devicons"),
 		gh("nvim-lualine/lualine.nvim"),
@@ -131,9 +102,6 @@ function M.setup()
 	})
 
 	add_optional_plugins({
-		gh("jacoborus/tender.vim"),
-		gh("ellisonleao/gruvbox.nvim"),
-		gh("NLKNguyen/papercolor-theme"),
 		gh("nvim-tree/nvim-tree.lua"),
 		gh("nvim-telescope/telescope-fzf-native.nvim"),
 		gh("nvim-telescope/telescope.nvim", { version = "v0.2.2" }),

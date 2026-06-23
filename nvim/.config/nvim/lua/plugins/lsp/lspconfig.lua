@@ -247,7 +247,9 @@ vim.lsp.config("lua_ls", {
 	},
 })
 
-vim.lsp.config("clangd", {})
+vim.lsp.config("clangd", {
+	filetypes = { "c", "cpp", "objc", "objcpp" },
+})
 
 -- Enable the language servers
 vim.lsp.enable({ ts_server, "oxlint", "html", "cssls", "tailwindcss", "emmet_ls", "lua_ls", "clangd" })
