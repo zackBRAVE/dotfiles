@@ -10,9 +10,11 @@ else
 	vim.g.loaded_netrwPlugin = 1
 	require("plugins-setup").setup()
 	require("core.options")
+	require("plugins.barbaric")
+	require("plugins.auto-dark-mode")
 	require("plugins.comment")
 	require("plugins.lualine")
-	require("plugins.nvim-cmp")
+	require("plugins.blink-cmp")
 	require("plugins.lsp.mason")
 	require("plugins.lsp.lspconfig")
 	require("plugins.lsp.conform")
@@ -20,7 +22,6 @@ else
 	require("plugins.autopairs")
 	require("plugins.treesitter")
 	require("plugins.gitsigns")
-	require("plugins.auto-dark-mode")
 	require("core.compile")
 	require("core.keymaps")
 end
