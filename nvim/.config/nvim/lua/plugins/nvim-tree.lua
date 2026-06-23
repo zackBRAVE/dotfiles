@@ -4,8 +4,6 @@ if not setup then
   return
 end
 
-pcall(require, "mini.icons").setup()
-
 -- change color for arrows in tree to light blue
 vim.cmd([[ highlight NvimTreeIndentMarker guifg=#3FC5FF ]])
 

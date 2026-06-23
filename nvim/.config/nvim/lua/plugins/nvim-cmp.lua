@@ -8,9 +8,9 @@ if not luasnip_status then
   return
 end
 
-local mini_icons_ok, mini_icons = pcall(require, "mini.icons")
-if mini_icons_ok then
-  mini_icons.setup()
+local lspkind_status, lspkind = pcall(require, "lspkind")
+if not lspkind_status then
+  return
 end
 
 require("luasnip/loaders/from_vscode").lazy_load()
@@ -39,14 +39,15 @@ cmp.setup({
     { name = "path" },
   }),
   formatting = {
-    format = function(_, vim_item)
-      if mini_icons_ok then
-        local icon = mini_icons.get("lsp", vim_item.kind)
-        if icon then
-          vim_item.kind = icon .. " " .. vim_item.kind
-        end
-      end
-      return vim_item
-    end,
+    format = lspkind.cmp_format({
+      maxwidth = 50,
+      ellipsis_char = "...",
+      menu = {
+        nvim_lsp = "[LSP]",
+        luasnip = "[Snippet]",
+        buffer = "[Buffer]",
+        path = "[Path]",
+      },
+    }),
   },
 })

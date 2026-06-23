@@ -4,11 +4,6 @@ if not status then
   return
 end
 
-local mini_icons_ok, mini_icons = pcall(require, "mini.icons")
-if mini_icons_ok then
-  mini_icons.setup()
-end
-
 -- get lualine nightfly theme
 local lualine_nightfly = require("lualine.themes.nightfly")
 
