@@ -34,6 +34,14 @@ if not vim.g.vscode then
 	end, { nargs = "*" })
 
 	keymap.set("n", "<leader>p", "<cmd>Telescope find_files<CR>", { noremap = true, desc = "Telescope find files" })
+	keymap.set("n", "g/", function()
+		local flags = vim.fn.input("rg flags: ")
+		if flags ~= "" then
+			require("telescope.builtin").live_grep({ additional_args = function(args) return vim.split(flags, " ") end })
+		else
+			require("telescope.builtin").live_grep()
+		end
+	end, { desc = "Search project contents" })
 	keymap.set("n", "<leader>R", "<Plug>RenamerStart", { desc = "Bulk rename files" })
 	keymap.set("n", "<M-p>", "<cmd>Telescope<CR>", { noremap = true, desc = "Telescope" })
 
