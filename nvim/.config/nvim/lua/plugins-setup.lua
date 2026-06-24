@@ -72,6 +72,8 @@ end)
 function M.setup()
 	add_plugins({
 		gh("nvim-lua/plenary.nvim"),
+		gh("nvim-telescope/telescope-fzf-native.nvim"),
+		gh("nvim-telescope/telescope.nvim", { version = "v0.2.2" }),
 		gh("rlue/vim-barbaric"),
 		gh("qpkorr/vim-renamer"),
 		gh("tpope/vim-surround"),
@@ -98,8 +100,6 @@ function M.setup()
 
 	add_optional_plugins({
 		gh("nvim-tree/nvim-tree.lua"),
-		gh("nvim-telescope/telescope-fzf-native.nvim"),
-		gh("nvim-telescope/telescope.nvim", { version = "v0.2.2" }),
 	})
 end
 

@@ -6,9 +6,6 @@ keymap.set("", "U", "<C-r>", { noremap = true })
 
 if not vim.g.vscode then
 	local has_comment_api, comment_api = pcall(require, "Comment.api")
-	local plugin_setup = require("plugins-setup")
-
-	-- save and quit
 	keymap.set("", "Q", function()
 		if #vim.api.nvim_list_wins() > 1 then
 			local cur_buf = vim.api.nvim_get_current_buf()
@@ -46,26 +43,21 @@ if not vim.g.vscode then
 		keymap.set("x", "<leader>/", toggle_visual_comment, { desc = "Toggle comment", silent = true })
 	end
 
-	vim.api.nvim_create_user_command("Telescope", function(opts)
-		plugin_setup.load_telescope()
-		pcall(vim.api.nvim_del_user_command, "Telescope")
-		vim.cmd("Telescope " .. opts.args)
-	end, { nargs = "*" })
+	local builtin = require("telescope.builtin")
 
 	keymap.set("n", "<Tab>", "<Cmd>bnext<CR>", { desc = "Next buffer" })
 	keymap.set("n", "<S-Tab>", "<Cmd>bprev<CR>", { desc = "Previous buffer" })
-	keymap.set("n", "<leader>b", "<Cmd>Telescope buffers<CR>", { desc = "Switch buffer" })
-	keymap.set("n", "<leader>p", "<cmd>Telescope find_files<CR>", { noremap = true, desc = "Telescope find files" })
+	keymap.set("n", "<leader>b", builtin.buffers, { desc = "Switch buffer" })
+	keymap.set("n", "<leader>p", builtin.find_files, { noremap = true, desc = "Find files" })
 	keymap.set("n", "g/", function()
 		local flags = vim.fn.input("rg flags: ")
 		if flags ~= "" then
-			require("telescope.builtin").live_grep({ additional_args = function(args) return vim.split(flags, " ") end })
+			builtin.live_grep({ additional_args = function(args) return vim.split(flags, " ") end })
 		else
-			require("telescope.builtin").live_grep()
+			builtin.live_grep()
 		end
 	end, { desc = "Search project contents" })
 	keymap.set("n", "<leader>R", "<Plug>RenamerStart", { desc = "Bulk rename files" })
-	keymap.set("n", "<M-p>", "<cmd>Telescope<CR>", { noremap = true, desc = "Telescope" })
 
 	local nvim_tree_loaded = false
 	keymap.set("n", "<leader>e", function()
