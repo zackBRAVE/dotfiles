@@ -29,6 +29,10 @@ nvimtree.setup({
     enable = true,
     update_root = false,
   },
+  git = {
+    enable = true,
+    timeout = 400,
+  },
   actions = {
     open_file = {
       window_picker = {
@@ -36,6 +40,15 @@ nvimtree.setup({
       },
     },
   },
+})
+
+-- Refresh git status when returning to Neovim from another app
+vim.api.nvim_create_autocmd("FocusGained", {
+  callback = function()
+    if package.loaded["nvim-tree"] then
+      pcall(require("nvim-tree.api").tree.reload)
+    end
+  end,
 })
 
 
