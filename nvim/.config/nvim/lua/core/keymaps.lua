@@ -52,6 +52,9 @@ if not vim.g.vscode then
 		vim.cmd("Telescope " .. opts.args)
 	end, { nargs = "*" })
 
+	keymap.set("n", "<Tab>", "<Cmd>bnext<CR>", { desc = "Next buffer" })
+	keymap.set("n", "<S-Tab>", "<Cmd>bprev<CR>", { desc = "Previous buffer" })
+	keymap.set("n", "<leader>b", "<Cmd>Telescope buffers<CR>", { desc = "Switch buffer" })
 	keymap.set("n", "<leader>p", "<cmd>Telescope find_files<CR>", { noremap = true, desc = "Telescope find files" })
 	keymap.set("n", "g/", function()
 		local flags = vim.fn.input("rg flags: ")
