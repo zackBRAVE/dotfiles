@@ -46,3 +46,11 @@ gitsigns.setup({
     map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", "Select hunk")
   end,
 })
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+  callback = function()
+    if package.loaded.gitsigns then
+      pcall(require("gitsigns").detach_all)
+    end
+  end,
+})
