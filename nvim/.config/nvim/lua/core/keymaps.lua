@@ -9,7 +9,26 @@ if not vim.g.vscode then
 	local plugin_setup = require("plugins-setup")
 
 	-- save and quit
-	keymap.set("", "Q", ":q<CR>", { noremap = true })
+	keymap.set("", "Q", function()
+		if #vim.api.nvim_list_wins() > 1 then
+			local cur_buf = vim.api.nvim_get_current_buf()
+			vim.cmd("bdelete! " .. cur_buf)
+
+			local cur_name = vim.api.nvim_buf_get_name(0)
+			if cur_name:match("NvimTree") then
+				for _, win in ipairs(vim.api.nvim_list_wins()) do
+					local buf = vim.api.nvim_win_get_buf(win)
+					local bname = vim.api.nvim_buf_get_name(buf)
+					if not bname:match("NvimTree") and vim.bo[buf].buflisted then
+						vim.api.nvim_set_current_win(win)
+						break
+					end
+				end
+			end
+		else
+			vim.cmd("q")
+		end
+	end, { noremap = true, desc = "Close buffer or window" })
 	keymap.set("", "S", ":w!<CR>", { noremap = true })
 	keymap.set("", "<C-s>", ":w suda://%<CR>", { noremap = true })
 	keymap.set("", "<C-q>", ":q!<CR>", { noremap = true })
