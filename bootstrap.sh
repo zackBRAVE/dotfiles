@@ -1,10 +1,24 @@
 #!/usr/bin/env bash
 #
 # bootstrap.sh — set up this machine from the dotfiles repo.
+# Usage: bootstrap.sh [--adopt]
 #
 # Prerequisites: brew + the apps (nvim, ghostty, ghost-complete, yazi, zed, starship) installed.
 #
 set -euo pipefail
+
+# Parse flags
+ADOPT_MODE=false
+for arg in "$@"; do
+  case "$arg" in
+    --adopt) ADOPT_MODE=true ;;
+    --help|-h)
+      echo "Usage: bootstrap.sh [--adopt]"
+      echo "  --adopt  Adopt existing configs into the dotfiles repo (no prompts)"
+      exit 0
+      ;;
+  esac
+done
 
 DOTFILES_REPO="${DOTFILES_REPO:-git@github.com:zackBRAVE/dotfiles.git}"
 DOTFILES_DIR="$HOME/dotfiles"
@@ -30,7 +44,25 @@ fi
 echo "==> Stowing configs..."
 cd "$DOTFILES_DIR"
 for pkg in */; do
-  stow -v "$pkg" 2>/dev/null || echo "  (skipped $pkg)"
+  pkg=${pkg%/}
+  [[ "$pkg" == .* ]] && continue
+
+  if $ADOPT_MODE; then
+    stow -v --adopt "$pkg" 2>/dev/null || echo "  (skipped $pkg)"
+  else
+    warnings=$(stow -n "$pkg" 2>&1 || true)
+    if echo "$warnings" | grep -qi "existing target"; then
+      echo "==> $pkg has existing configs that would conflict:"
+      echo "$warnings" | sed 's/^/  /'
+      read -r -p "[a]dopt | [s]kip? " choice </dev/tty
+      case "$choice" in
+        a|A) stow -v --adopt "$pkg" 2>/dev/null || echo "  (skipped $pkg)" ;;
+        *) echo "  (skipped $pkg)" ;;
+      esac
+    else
+      stow -v "$pkg" 2>/dev/null || echo "  (skipped $pkg)"
+    fi
+  fi
 done
 
 # 4. Rebuild kbd-brightness if source changed (macOS only)
@@ -83,6 +115,10 @@ if [[ ! -f "$PLIST" ]]; then
   mkdir -p "$HOME/Library/LaunchAgents"
   cp "$DOTFILES_DIR/bin/com.zackbrave.dotfiles-sync.plist" "$PLIST"
   launchctl load "$PLIST"
+fi
+
+if $ADOPT_MODE; then
+  echo "==> Configs adopted. Run 'git diff' to review changes, then commit."
 fi
 
 echo "==> Done. Configs are live at $DOTFILES_DIR"
