@@ -9,7 +9,6 @@ vim.cmd([[ highlight NvimTreeIndentMarker guifg=#3FC5FF ]])
 
 -- configure nvim-tree
 nvimtree.setup({
-  -- change folder arrow icons
   renderer = {
     icons = {
       web_devicons = {
@@ -26,9 +25,10 @@ nvimtree.setup({
       },
     },
   },
-  -- disable window_picker for
-  -- explorer to work well with
-  -- window splits
+  update_focused_file = {
+    enable = true,
+    update_root = false,
+  },
   actions = {
     open_file = {
       window_picker = {
