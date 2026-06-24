@@ -33,7 +33,8 @@ lualine.setup({
   options = {
     theme = lualine_nightfly,
   },
-  sections = {
-    lualine_c = { "buffers" },
-  },
+	sections = {
+		lualine_b = { "branch", "diff" },
+		lualine_c = { "buffers" },
+	},
 })

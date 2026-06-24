@@ -93,6 +93,7 @@ function M.setup()
 		gh("windwp/nvim-autopairs"),
 		gh("windwp/nvim-ts-autotag"),
 		gh("lewis6991/gitsigns.nvim"),
+		gh("kdheepak/lazygit.nvim"),
 		gh("lambdalisue/suda.vim"),
 		gh("f-person/auto-dark-mode.nvim"),
 		gh("echasnovski/mini.nvim", { version = "stable" }),

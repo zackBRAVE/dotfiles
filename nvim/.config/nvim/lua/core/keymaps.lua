@@ -56,6 +56,10 @@ keymap.set("n", "g/", function()
 		builtin.live_grep()
 	end
 end, { desc = "Search project contents" })
+keymap.set("n", "<leader>lg", "<Cmd>LazyGit<CR>", { desc = "Open lazygit" })
+keymap.set("n", "<leader>gc", builtin.git_bcommits, { desc = "Git commits (buffer)" })
+keymap.set("n", "<leader>gS", builtin.git_status, { desc = "Git status" })
+
 keymap.set("n", "<leader>R", "<Plug>RenamerStart", { desc = "Bulk rename files" })
 
 local nvim_tree_loaded = false
