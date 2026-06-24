@@ -103,10 +103,4 @@ function M.setup()
 	})
 end
 
-function M.setup_vscode()
-	add_plugins({
-		gh("rlue/vim-barbaric"),
-	})
-end
-
 return M
