@@ -1,8 +1,5 @@
 gui:
   nerdFontsVersion: "3"
-os:
-  editCommand: "nvim"
-  editCommandTemplate: '{{editor}} --server /tmp/nvim-server.pipe --remote-tab "$(pwd)/{{filename}}"'
 keybinding:
   universal:
     prevItem-alt: l
