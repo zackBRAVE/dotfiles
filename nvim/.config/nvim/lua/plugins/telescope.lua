@@ -5,6 +5,8 @@ end
 
 telescope.setup({
   defaults = {
+    find_command = { "fd", "--type", "f", "--hidden", "--exclude", ".git" },
+    file_ignore_patterns = { "node_modules", ".git/" },
     mappings = {
       i = {
         ["<C-l>"] = "move_selection_previous",
